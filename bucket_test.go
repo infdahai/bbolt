@@ -1737,7 +1737,7 @@ func TestBucket_Put_Single(t *testing.T) {
 		for _, item := range items {
 			if err := db.Update(func(tx *bolt.Tx) error {
 				if err := tx.Bucket([]byte("widgets")).Put(item.Key, item.Value); err != nil {
-					panic("put error: " + err.Error())
+					t.Fatalf("put error: %s", err)
 				}
 				m[string(item.Key)] = item.Value
 				return nil

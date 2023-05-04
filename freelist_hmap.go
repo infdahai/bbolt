@@ -1,6 +1,7 @@
 package bbolt
 
 import (
+	"fmt"
 	"sort"
 
 	"go.etcd.io/bbolt/internal/common"
@@ -164,7 +165,8 @@ func (f *freelist) init(pgids []common.Pgid) {
 	start := pgids[0]
 
 	if !sort.SliceIsSorted([]common.Pgid(pgids), func(i, j int) bool { return pgids[i] < pgids[j] }) {
-		panic("pgids not sorted")
+		_ = fmt.Errorf("pgids not sorted")
+		return
 	}
 
 	f.freemaps = make(map[uint64]pidSet)

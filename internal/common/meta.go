@@ -41,10 +41,12 @@ func (m *Meta) Copy(dest *Meta) {
 // Write writes the meta onto a page.
 func (m *Meta) Write(p *Page) {
 	if m.root.root >= m.pgid {
-		panic(fmt.Sprintf("root bucket pgid (%d) above high water mark (%d)", m.root.root, m.pgid))
+		_ = fmt.Errorf("root bucket pgid (%d) above high water mark (%d)", m.root.root, m.pgid)
+		return
 	} else if m.freelist >= m.pgid && m.freelist != PgidNoFreelist {
 		// TODO: reject pgidNoFreeList if !NoFreelistSync
-		panic(fmt.Sprintf("freelist pgid (%d) above high water mark (%d)", m.freelist, m.pgid))
+		_ = fmt.Errorf("freelist pgid (%d) above high water mark (%d)", m.freelist, m.pgid)
+		return
 	}
 
 	// Page id is either going to be 0 or 1 which we can determine by the transaction ID.

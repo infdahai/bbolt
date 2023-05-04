@@ -210,7 +210,7 @@ func (tx *Tx) Commit() error {
 			errs = append(errs, err.Error())
 		}
 		if len(errs) > 0 {
-			panic("check fail: " + strings.Join(errs, "\n"))
+			return fmt.Errorf("check fail: " + strings.Join(errs, "\n"))
 		}
 	}
 

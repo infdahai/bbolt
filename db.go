@@ -1079,7 +1079,8 @@ func (db *DB) meta() *common.Meta {
 
 	// This should never be reached, because both meta1 and meta0 were validated
 	// on mmap() and we do fsync() on every write.
-	panic("bolt.DB.meta(): invalid meta pages")
+	_ = fmt.Errorf("bolt.DB.meta(): invalid meta pages")
+	return nil
 }
 
 // allocate returns a contiguous block of memory starting at a given page.
@@ -1163,11 +1164,13 @@ func (db *DB) freepages() []common.Pgid {
 	defer func() {
 		err = tx.Rollback()
 		if err != nil {
-			panic("freepages: failed to rollback tx")
+			_ = fmt.Errorf("freepages: failed to rollback tx")
+			return
 		}
 	}()
 	if err != nil {
-		panic("freepages: failed to open read only tx")
+		_ = fmt.Errorf("freepages: failed to open read only tx")
+		return nil
 	}
 
 	reachable := make(map[common.Pgid]*common.Page)
@@ -1175,7 +1178,8 @@ func (db *DB) freepages() []common.Pgid {
 	ech := make(chan error)
 	go func() {
 		for e := range ech {
-			panic(fmt.Sprintf("freepages: failed to get all reachable pages (%v)", e))
+			_ = fmt.Errorf("freepages: failed to get all reachable pages (%v)", e)
+			return
 		}
 	}()
 	tx.checkBucket(&tx.root, reachable, nofreed, HexKVStringer(), ech)

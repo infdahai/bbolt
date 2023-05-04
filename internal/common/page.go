@@ -133,7 +133,8 @@ func (p *Page) FreelistPageCount() (int, int) {
 		c := *(*Pgid)(UnsafeAdd(unsafe.Pointer(p), unsafe.Sizeof(*p)))
 		count = int(c)
 		if count < 0 {
-			panic(fmt.Sprintf("leading element count %d overflows int", c))
+			_ = fmt.Errorf("leading element count %d overflows int", c)
+			return 0, 0
 		}
 	}
 
@@ -358,7 +359,8 @@ func (a Pgids) Merge(b Pgids) Pgids {
 // If dst is too small, it panics.
 func Mergepgids(dst, a, b Pgids) {
 	if len(dst) < len(a)+len(b) {
-		panic(fmt.Errorf("mergepgids bad len %d < %d + %d", len(dst), len(a), len(b)))
+		_ = fmt.Errorf("mergepgids bad len %d < %d + %d", len(dst), len(a), len(b))
+		return
 	}
 	// Copy in the opposite slice if one is nil.
 	if len(a) == 0 {

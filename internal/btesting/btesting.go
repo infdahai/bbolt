@@ -112,7 +112,8 @@ func (db *DB) SetOptions(o *bolt.Options) {
 // MustReopen reopen the database. Panic on error.
 func (db *DB) MustReopen() {
 	if db.DB != nil {
-		panic("Please call Close() before MustReopen()")
+		_ = fmt.Errorf("Please call Close() before MustReopen()")
+		return
 	}
 	db.t.Logf("Reopening bbolt DB at: %s", db.f)
 	indb, err := bolt.Open(db.Path(), 0666, db.o)

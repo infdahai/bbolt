@@ -73,7 +73,8 @@ func (n *node) pageElementSize() uintptr {
 // childAt returns the child node at a given index.
 func (n *node) childAt(index int) *node {
 	if n.isLeaf {
-		panic(fmt.Sprintf("invalid childAt(%d) on a leaf node", index))
+		_ = fmt.Errorf("invalid childAt(%d) on a leaf node", index)
+		return nil
 	}
 	return n.bucket.node(n.inodes[index].Pgid(), n)
 }
@@ -116,11 +117,14 @@ func (n *node) prevSibling() *node {
 // put inserts a key/value.
 func (n *node) put(oldKey, newKey, value []byte, pgId common.Pgid, flags uint32) {
 	if pgId >= n.bucket.tx.meta.Pgid() {
-		panic(fmt.Sprintf("pgId (%d) above high water mark (%d)", pgId, n.bucket.tx.meta.Pgid()))
+		_ = fmt.Errorf("pgId (%d) above high water mark (%d)", pgId, n.bucket.tx.meta.Pgid())
+		return
 	} else if len(oldKey) <= 0 {
-		panic("put: zero-length old key")
+		_ = fmt.Errorf("put: zero-length old key")
+		return
 	} else if len(newKey) <= 0 {
-		panic("put: zero-length new key")
+		_ = fmt.Errorf("put: zero-length new key")
+		return
 	}
 
 	// Find insertion index.
@@ -187,7 +191,8 @@ func (n *node) write(p *common.Page) {
 	}
 
 	if len(n.inodes) >= 0xFFFF {
-		panic(fmt.Sprintf("inode overflow: %d (pgid=%d)", len(n.inodes), p.Id()))
+		_ = fmt.Errorf("inode overflow: %d (pgid=%d)", len(n.inodes), p.Id())
+		return
 	}
 	p.SetCount(uint16(len(n.inodes)))
 
@@ -328,7 +333,7 @@ func (n *node) spill() error {
 
 		// Write the node.
 		if p.Id() >= tx.meta.Pgid() {
-			panic(fmt.Sprintf("pgid (%d) above high water mark (%d)", p.Id(), tx.meta.Pgid()))
+			return fmt.Errorf("pgid (%d) above high water mark (%d)", p.Id(), tx.meta.Pgid())
 		}
 		node.pgid = p.Id()
 		node.write(p)

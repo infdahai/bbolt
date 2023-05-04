@@ -116,7 +116,8 @@ func (f *freelist) arrayAllocate(txid common.Txid, n int) common.Pgid {
 	var initial, previd common.Pgid
 	for i, id := range f.ids {
 		if id <= 1 {
-			panic(fmt.Sprintf("invalid page allocation: %d", id))
+			_ = fmt.Errorf("invalid page allocation: %d", id)
+			return 0
 		}
 
 		// Reset initial page if this is not contiguous.
@@ -154,7 +155,8 @@ func (f *freelist) arrayAllocate(txid common.Txid, n int) common.Pgid {
 // If the page is already free then a panic will occur.
 func (f *freelist) free(txid common.Txid, p *common.Page) {
 	if p.Id() <= 1 {
-		panic(fmt.Sprintf("cannot free page 0 or 1: %d", p.Id()))
+		_ = fmt.Errorf("cannot free page 0 or 1: %d", p.Id())
+		return
 	}
 
 	// Free page and all its overflow pages.
@@ -174,7 +176,8 @@ func (f *freelist) free(txid common.Txid, p *common.Page) {
 	for id := p.Id(); id <= p.Id()+common.Pgid(p.Overflow()); id++ {
 		// Verify that page is not already free.
 		if _, ok := f.cache[id]; ok {
-			panic(fmt.Sprintf("page %d already freed", id))
+			_ = fmt.Errorf("page %d already freed", id)
+			return
 		}
 		// Add to the freelist and cache.
 		txp.ids = append(txp.ids, id)
@@ -266,7 +269,8 @@ func (f *freelist) freed(pgId common.Pgid) bool {
 // read initializes the freelist from a freelist page.
 func (f *freelist) read(p *common.Page) {
 	if !p.IsFreelistPage() {
-		panic(fmt.Sprintf("invalid freelist page: %d, page type is %s", p.Id(), p.Typ()))
+		_ = fmt.Errorf("invalid freelist page: %d, page type is %s", p.Id(), p.Typ())
+		return
 	}
 
 	ids := p.FreelistPageIds()

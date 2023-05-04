@@ -534,7 +534,7 @@ func TestDB_Open_ReadOnly(t *testing.T) {
 	o := &bolt.Options{ReadOnly: true}
 	readOnlyDB, err := bolt.Open(f, 0666, o)
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
 
 	if !readOnlyDB.IsReadOnly() {
@@ -673,16 +673,16 @@ func TestDB_Concurrent_WriteTo(t *testing.T) {
 		defer wg.Done()
 		f, err := os.CreateTemp("", "bolt-")
 		if err != nil {
-			panic(err)
+			t.Fatal(err)
 		}
 		time.Sleep(time.Duration(rand.Intn(20)+1) * time.Millisecond)
 		_, err = tx.WriteTo(f)
 		if err != nil {
-			panic(err)
+			t.Fatal(err)
 		}
 		err = tx.Rollback()
 		if err != nil {
-			panic(err)
+			t.Fatal(err)
 		}
 		f.Close()
 
